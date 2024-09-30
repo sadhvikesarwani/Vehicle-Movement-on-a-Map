@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Movement on Map</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+<body>
+    <h1>Vehicle Movement Tracker</h1>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([17.385044, 78.486671], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+        let vehicleMarker = L.marker([17.385044, 78.486671]).addTo(map);
+        let polyline = L.polyline([[17.385044, 78.486671]], { color: 'blue' }).addTo(map);
+
+        async function updateVehicleLocation() {
+            const response = await fetch('http://localhost:3000/vehicle-location');
+            const location = await response.json();
+
+            const latLng = [location.latitude, location.longitude];
+            vehicleMarker.setLatLng(latLng);
+            polyline.addLatLng(latLng);
+
+            map.setView(latLng, 13);
+        }
+
+        setInterval(updateVehicleLocation, 5000);
+    </script>
+</body>
+</html>
