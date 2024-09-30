@@ -3,33 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vehicle Movement on Map</title>
+    <title>Vehicle Movement on Map </title>
+    <p>Instructions It's Deployed on the free instance of the server please wait for 2 min and if it not work pleas refresh and wait Thank You</p>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
 <body>
     <h1>Vehicle Movement Tracker</h1>
-    <div id="map"></div>
+    <div id="map" style="height: 500px;"></div>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        const map = L.map('map').setView([17.385044, 78.486671], 13);
+        // Initialize the map with a more zoomed-in level
+        const map = L.map('map').setView([25.455742149024662, 81.8602362177426], 15);
+
+        // Add the tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19
         }).addTo(map);
-        let vehicleMarker = L.marker([17.385044, 78.486671]).addTo(map);
-        let polyline = L.polyline([[17.385044, 78.486671]], { color: 'blue' }).addTo(map);
 
+        // Define a custom car icon for the marker
+        const carIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/2972/2972185.png', // Car icon URL
+            iconSize: [40, 40], // Size of the icon
+            iconAnchor: [20, 40], // Point where the icon is anchored to the marker
+        });
+
+        // Add the vehicle marker with the car icon
+        let vehicleMarker = L.marker([25.455742149024662, 81.8602362177426], { icon: carIcon }).addTo(map);
+
+        // Add the polyline to trace the vehicle path
+        let polyline = L.polyline([[25.455742149024662, 81.8602362177426]], { color: 'blue' }).addTo(map);
+
+        // Function to update vehicle location
         async function updateVehicleLocation() {
-            const response = await fetch('http://localhost:3000/vehicle-location');
+            const response = await fetch('https://vehicle-movement-3eli.onrender.com/vehicle-location');
             const location = await response.json();
 
             const latLng = [location.latitude, location.longitude];
             vehicleMarker.setLatLng(latLng);
             polyline.addLatLng(latLng);
 
-            map.setView(latLng, 13);
+            // Check if the vehicle has moved significantly before resetting the view
+            const currentView = map.getBounds();
+            if (!currentView.contains(latLng)) {
+                map.setView(latLng, 15);
+            }
         }
 
+        // Update vehicle location every 5 seconds
         setInterval(updateVehicleLocation, 5000);
     </script>
 </body>
